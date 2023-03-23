@@ -71,7 +71,7 @@ export default {
       // 弹出层标题
       title: "修改头像",
       options: {
-        img: this.$store.state.userInfo.avatar, //裁剪图片的地址
+        img: this.$store.state.userInfo.img, //裁剪图片的地址
         autoCrop: true, // 是否默认生成截图框
         autoCropWidth: 200, // 默认生成截图框宽度
         autoCropHeight: 200, // 默认生成截图框高度
@@ -125,12 +125,12 @@ export default {
         let formData = new FormData();
         formData.append("avatarFile", data, this.filename);
         formData.append("user", JSON.stringify(this.user));
-        this.$axios.post("/sys/user/avatar", formData).then(res => {
+        this.$axios.post("/user/avatar", formData).then(res => {
           if (res.data.code === 200){
             this.modal.notifySuccess(res.data.data)
             this.$axios.get("/userInfo").then(res => {
               this.$store.commit('SET_USER_INFO', res.data.data.user)
-              this.options.img = res.data.data.user.avatar
+              this.options.img = res.data.data.user.img
               this.user = res.data.data.user
             })
           }
@@ -144,7 +144,7 @@ export default {
     },
     // 关闭窗口
     closeDialog() {
-      this.options.img = this.$store.state.userInfo.avatar
+      this.options.img = this.$store.state.userInfo.img
       this.visible = false;
     }
   }

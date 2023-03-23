@@ -55,7 +55,8 @@
 					</el-table-column>
 					<el-table-column label="评论详情" align="center" key="detail" prop="detail">
 						<template slot-scope="scope">
-							<span @click="showCommentDetail(scope.row.detail)">{{ scope.row.detail | ellipsis(15) }}</span>
+							<span
+								@click="showCommentDetail(scope.row.detail)">{{ scope.row.detail | ellipsis(15) }}</span>
 						</template>
 					</el-table-column>
 					<el-table-column label="操作" align="center" width="250" class-name="small-padding fixed-width">
@@ -76,8 +77,7 @@
 					<el-col :span="24">
 						<el-form-item label="影评详情" prop="detail" style="margin-top:-15px">
 							<!--readonly属性保证了input输入框只读不写 -->
-							<el-input v-model="form.detail" type="textarea" maxlength="30" readonly="true"
-								:rows="5" />
+							<el-input v-model="form.detail" type="textarea" maxlength="30" readonly="true" :rows="5" />
 						</el-form-item>
 					</el-col>
 				</el-row>

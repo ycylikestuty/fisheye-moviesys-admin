@@ -9,7 +9,7 @@
         <div class="right-menu">
             <el-dropdown class="avatar-container" trigger="hover">
                 <div class="avatar-wrapper">
-                    <img :src="getUserInfo().avatar" class="user-avatar">
+                    <img :src="getUserInfo().img" class="user-avatar">
                 </div>
                 <el-dropdown-menu slot="dropdown" class="user-dropdown">
                     <div @click="addTag()">
@@ -30,6 +30,7 @@
 </template>
 
 <script>
+	//缩进组件
     import Hamburger from "./Hamburger";
 
     export default {
@@ -58,7 +59,7 @@
                 })
             },
             logout() {
-                this.modal.confirm('确定要注销并退出系统吗？').then(function () {
+                this.modal.confirm('确定要退出系统吗？').then(function () {
                 }).then(() => {
                     this.$axios.post("/logout").then(res => {
                         localStorage.clear()
