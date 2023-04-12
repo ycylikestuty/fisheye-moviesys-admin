@@ -40,10 +40,11 @@
 							</template>
 						</el-select>
 					</el-form-item>
-					<el-form-item>
-						<el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-						<el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-					</el-form-item>
+					<!-- <el-form-item> -->
+					<el-button style="margin-top: 6px;" type="primary" icon="el-icon-search" size="mini"
+						@click="handleQuery">搜索</el-button>
+					<el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+					<!-- </el-form-item> -->
 				</el-form>
 				<!--按钮-->
 				<el-button type="primary" plain icon="el-icon-plus" size="mini" @click="handleAdd"
@@ -169,14 +170,15 @@
 							<!--两个div默认情况下是垂直排列的-->
 							<!--两个div水平排列只需设置这两个div的style="float: left”属性即可-->
 							<div style="text-align:center;margin-left:25px;float:left">
-								<img :src="form.img" min-width="70" height="70" />
+								<img :src=this.imgUrl min-width="70" height="70" />
 							</div>
-							<div style="text-align:center;margin-left:25px;float:left;margin-top:18px;">
-								<el-button size="mini" type="primary" plain @click="mmm"
-									v-permission="['movie:update']">
+							<el-upload style="text-align:center;margin-left:25px;float:left;margin-top:18px;" action="#"
+								:show-file-list="false" :on-change="beforeUpload">
+								<el-button size="small">
 									上传海报
+									<i class="el-icon-upload el-icon--right"></i>
 								</el-button>
-							</div>
+							</el-upload>
 						</el-form-item>
 					</el-col>
 				</el-row>
@@ -203,6 +205,9 @@
 		name: "List",
 		data() {
 			return {
+				filename: "",
+				// 是否显示弹出层
+				// open: false,
 				// 类型选项
 				typeOptions: undefined,
 				// 表单参数
@@ -237,7 +242,7 @@
 				ids: [],
 				title: undefined,
 				open: false,
-				flag: true,
+				imgUrl: undefined,
 				// 表单校验
 				rules: {
 					name: [{
@@ -300,6 +305,38 @@
 			}
 		},
 		methods: {
+			beforeUpload(file, fileList) {
+
+				let formdata = new FormData()
+				fileList.map(item => { //fileList本来就是数组，就不用转为真数组了
+					formdata.append("file", item.raw) //将每一个文件图片都加进formdata
+				})
+				//上传的文件名，可以在后端进行修改
+				console.log("file:" + formdata.get("file"))
+				if (formdata.get("file") === null) { //上传的文件为空
+					return;
+				}
+				if (formdata.get("file").type.indexOf("image/") === -1) {
+					this.modal.msgError("文件格式错误，请上传图片类型,如：JPG，PNG后缀的文件。")
+					return;
+				}
+				// formdata.append("movieId", );
+				this.$axios.post("/movie/getPosterUrl", formdata).then(res => {
+					console.log("url:" + res.data.result)
+					if (res.data.result === "海报上传失败") {
+						this.modal.notifyError(res.data.result)
+					} else {
+						this.modal.notifySuccess("海报上传成功")
+						this.filename = res.data.result
+						this.form.img = this.filename
+						if (this.form.img.includes("http://localhost:8100/poster") === true) {
+							this.imgUrl = this.form.img
+						} else {
+							this.imgUrl = "http://localhost:8100/poster" + this.form.img
+						}
+					}
+				})
+			},
 			getTypeList() {
 				this.$axios.get("/type/list").then(res => {
 					this.typeOptions = res.data.result
@@ -353,7 +390,8 @@
 					director: undefined,
 					starring: undefined,
 					year: undefined,
-					type: undefined
+					type: undefined,
+					img: undefined
 				}
 
 				this.resetForm("form")
@@ -368,6 +406,7 @@
 			cancel() {
 				this.open = false
 				this.reset()
+				this.imgUrl = null
 			},
 			submitForm(formName) {
 				this.$refs[formName].validate((valid) => {
@@ -375,8 +414,7 @@
 						if (this.title === "添加电影") {
 							var longD = Number(this.form.duration)
 							this.form.duration = longD
-							this.form.img =
-								"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2545472803.webp"
+
 							this.$axios.post("/movie/add", this.form).then(res => {
 								if (res.data.code === 200) {
 									this.modal.notifySuccess(res.data.result)
@@ -384,9 +422,17 @@
 								this.getMovieList()
 							})
 						} else if (this.title === "修改电影") {
+							// if(this.form.img.contains("http://localhost:8100/poster")==false){
+							// 	this.imgUrl=this.form.img
+							// }
+							// else {
+							// 	this.imgUrl="http://localhost:8100/poster"+this.form.img
+							// }
+							// console.log(this.imgUrl)
 							//将String类型转化为Number类型，因为js没有Long类型
 							var longD = Number(this.form.duration)
 							console.log("type:" + this.form.type)
+							console.log("img:" + this.form.img)
 							this.form.duration = longD
 							this.$axios.post("/movie/update", this.form).then(res => {
 								console.log("type4:" + this.form.type)
@@ -402,6 +448,7 @@
 					}
 				})
 				this.open = false
+				this.imgUrl = null
 			},
 			handleUpdate(row) {
 				//for…in输出的是数组索引,所以改为普通的for循环或者forEach
@@ -443,6 +490,14 @@
 						})
 					}
 				)
+				console.log("img:" + this.form.img)
+				if (this.form.img.includes("http://localhost:8100/poster") === true) {
+					this.imgUrl = this.form.img
+				} else {
+					this.imgUrl = "http://localhost:8100/poster" + this.form.img
+				}
+				console.log("imgURL:" + this.imgUrl)
+				// this.form.img=this.filename
 				//也可以不使用上面的方法，反正能成功
 				this.open = true
 				this.title = "修改电影"
